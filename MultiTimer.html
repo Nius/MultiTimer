@@ -808,9 +808,31 @@
 			// Add an initial timer
 			addTimer();
 		
-			// Start the clock
-			setInterval(tick,1000);
+			/* CLOCK SYNCHRONIZATION
+			We would simply set an interval right now for 1000 ms and let that be the timer clock,
+			but it would have a 999/1000 chance of being out-of-sync with the system clock. With
+			that being the case, target timers could (and did during tests) have the same target
+			time but disagree on time remaining by 1 second. If, for example, this utility's clock
+			happened to be sychronized to the 500th millisecond of the system clock, then every new
+			timer would have a 50% chance of being off by 1 second.
+			The setInterval function is also unreliable over time as it is beholden to the availability
+			of system resources. Each tick will therefore check the remaining ms until the next system
+			clock tick and resynchronize.
+			*/
+
+			nextTick();
 		});
+
+		function nextTick()
+		{
+			tick();
+
+			// Determine MS to next second
+			var ms = new Date().getMilliseconds();
+			// Tick at exactly the next second
+			setTimeout(nextTick,1000 - ms);
+		}
+
 	</script>
 </head>
 <body>
